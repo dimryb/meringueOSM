@@ -12,6 +12,7 @@ import org.osmdroid.config.Configuration.getInstance
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.MinimapOverlay
 import org.osmdroid.views.overlay.ScaleBarOverlay
 import org.osmdroid.views.overlay.compass.CompassOverlay
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         setupCompass(mapView)
         setupRotationGesture(mapView)
         setupScale(this, mapView)
+        setupMinimapOverlay(this, mapView)
     }
 
     private fun setupStartPoint(map: MapView) {
@@ -83,6 +85,16 @@ class MainActivity : AppCompatActivity() {
         //play around with these values to get the location on screen in the right place for your application
         scaleBarOverlay.setScaleBarOffset(dm.widthPixels / 2, 10)
         map.overlays.add(scaleBarOverlay)
+    }
+
+    private fun setupMinimapOverlay(context: Context, map: MapView) {
+        val dm : DisplayMetrics = context.resources.displayMetrics
+        val minimapOverlay = MinimapOverlay(context, map.tileRequestCompleteHandler)
+        minimapOverlay.width = dm.widthPixels / 5
+        minimapOverlay.height = dm.heightPixels / 5
+//optionally, you can set the minimap to a different tile source
+//minimapOverlay.setTileSource(....)
+        map.overlays.add(minimapOverlay)
     }
 
     override fun onResume() {
