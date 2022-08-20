@@ -1,18 +1,20 @@
 package space.rybakov.meringueosm
+
 import android.os.Bundle
 import android.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import org.osmdroid.config.Configuration.*
+import org.osmdroid.config.Configuration.getInstance
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-
-import java.util.ArrayList
+import org.osmdroid.views.overlay.compass.CompassOverlay
+import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
+import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 
 class MainActivity : AppCompatActivity() {
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
-    private lateinit var map : MapView
+    private lateinit var map: MapView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -38,6 +40,30 @@ class MainActivity : AppCompatActivity() {
         mapController.setZoom(12.0)
         val startPoint = GeoPoint(56.50, 85.00);
         mapController.setCenter(startPoint);
+
+        setupStartPoint()
+        setupCompass()
+        setupRotationGesture(map)
+    }
+
+    private fun setupStartPoint() {
+        val mapController = map.controller
+        mapController.setZoom(12.0)
+        val startPoint = GeoPoint(56.50, 85.00);
+        mapController.setCenter(startPoint);
+    }
+
+    private fun setupCompass() {
+        val compassOverlay = CompassOverlay(this, InternalCompassOrientationProvider(this), map)
+        compassOverlay.enableCompass()
+        map.overlays.add(compassOverlay)
+    }
+
+    private fun setupRotationGesture(mMapView: MapView) {
+        val rotationGestureOverlay = RotationGestureOverlay(mMapView)
+        rotationGestureOverlay.isEnabled
+        map.setMultiTouchControls(true)
+        map.overlays.add(rotationGestureOverlay)
     }
 
     override fun onResume() {
@@ -58,7 +84,11 @@ class MainActivity : AppCompatActivity() {
         map.onPause()  //needed for compass, my location overlays, v6.0.0 and up
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         val permissionsToRequest = ArrayList<String>()
         var i = 0
@@ -70,7 +100,8 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this,
                 permissionsToRequest.toTypedArray(),
-                REQUEST_PERMISSIONS_REQUEST_CODE)
+                REQUEST_PERMISSIONS_REQUEST_CODE
+            )
         }
     }
 
