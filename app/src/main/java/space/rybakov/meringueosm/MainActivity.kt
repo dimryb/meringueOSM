@@ -1,20 +1,25 @@
 package space.rybakov.meringueosm
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.util.DisplayMetrics
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import org.osmdroid.config.Configuration.getInstance
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.ScaleBarOverlay
 import org.osmdroid.views.overlay.compass.CompassOverlay
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 
 class MainActivity : AppCompatActivity() {
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
-    private lateinit var map: MapView
+    private lateinit var mapView: MapView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -33,37 +38,51 @@ class MainActivity : AppCompatActivity() {
         //inflate and create the map
         setContentView(R.layout.activity_main)
 
-        map = findViewById<MapView>(R.id.map)
-        map.setTileSource(TileSourceFactory.MAPNIK)
+        mapView = findViewById<MapView>(R.id.map)
+        mapView.setTileSource(TileSourceFactory.MAPNIK)
 
-        val mapController = map.controller
+        val mapController = mapView.controller
         mapController.setZoom(12.0)
         val startPoint = GeoPoint(56.50, 85.00);
         mapController.setCenter(startPoint);
 
-        setupStartPoint()
-        setupCompass()
-        setupRotationGesture(map)
+        setupStartPoint(mapView)
+        setupCompass(mapView)
+        setupRotationGesture(mapView)
+        setupScale(this, mapView)
     }
 
-    private fun setupStartPoint() {
+    private fun setupStartPoint(map: MapView) {
         val mapController = map.controller
         mapController.setZoom(12.0)
         val startPoint = GeoPoint(56.50, 85.00);
         mapController.setCenter(startPoint);
     }
 
-    private fun setupCompass() {
+    private fun setupCompass(map: MapView) {
         val compassOverlay = CompassOverlay(this, InternalCompassOrientationProvider(this), map)
         compassOverlay.enableCompass()
         map.overlays.add(compassOverlay)
     }
 
-    private fun setupRotationGesture(mMapView: MapView) {
-        val rotationGestureOverlay = RotationGestureOverlay(mMapView)
+    private fun setupRotationGesture(map: MapView) {
+        val rotationGestureOverlay = RotationGestureOverlay(map)
         rotationGestureOverlay.isEnabled
         map.setMultiTouchControls(true)
         map.overlays.add(rotationGestureOverlay)
+    }
+
+    private fun setupScale(context: Context, map: MapView) {
+        // Note, "context" refers to your activity/application context.
+        // You can simply do resources.displayMetrics when inside an activity.
+        // When you aren't in an activity class, you will need to have passed the context
+        // to the non-activity class.
+        val dm : DisplayMetrics = context.resources.displayMetrics
+        val scaleBarOverlay = ScaleBarOverlay(map)
+        scaleBarOverlay.setCentred(true)
+        //play around with these values to get the location on screen in the right place for your application
+        scaleBarOverlay.setScaleBarOffset(dm.widthPixels / 2, 10)
+        map.overlays.add(scaleBarOverlay)
     }
 
     override fun onResume() {
@@ -72,7 +91,7 @@ class MainActivity : AppCompatActivity() {
         //if you make changes to the configuration, use
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
-        map.onResume() //needed for compass, my location overlays, v6.0.0 and up
+        mapView.onResume() //needed for compass, my location overlays, v6.0.0 and up
     }
 
     override fun onPause() {
@@ -81,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         //if you make changes to the configuration, use
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().save(this, prefs);
-        map.onPause()  //needed for compass, my location overlays, v6.0.0 and up
+        mapView.onPause()  //needed for compass, my location overlays, v6.0.0 and up
     }
 
     override fun onRequestPermissionsResult(
@@ -105,8 +124,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    /*private fun requestPermissionsIfNecessary(String[] permissions) {
+    private fun requestPermissionsIfNecessary(permissions: Array<out String>) {
         val permissionsToRequest = ArrayList<String>();
         permissions.forEach { permission ->
         if (ContextCompat.checkSelfPermission(this, permission)
@@ -115,11 +133,11 @@ class MainActivity : AppCompatActivity() {
             permissionsToRequest.add(permission);
         }
     }
-        if (permissionsToRequest.size() > 0) {
+        if (permissionsToRequest.size > 0) {
             ActivityCompat.requestPermissions(
                     this,
-                    permissionsToRequest.toArray(new String[0]),
+                    permissionsToRequest.toArray(Array(0) { i: Int -> "$i" }),
                     REQUEST_PERMISSIONS_REQUEST_CODE);
         }
-    }*/
+    }
 }
