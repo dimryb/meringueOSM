@@ -12,8 +12,7 @@ import org.osmdroid.config.Configuration.getInstance
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.MinimapOverlay
-import org.osmdroid.views.overlay.ScaleBarOverlay
+import org.osmdroid.views.overlay.*
 import org.osmdroid.views.overlay.compass.CompassOverlay
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
@@ -41,6 +40,7 @@ class MainActivity : AppCompatActivity() {
 
         mapView = findViewById<MapView>(R.id.map)
         mapView.setTileSource(TileSourceFactory.MAPNIK)
+//        mapView.setTileSource(TileSourceFactory.USGS_TOPO);
 
         val mapController = mapView.controller
         mapController.setZoom(12.0)
@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         setupRotationGesture(mapView)
         setupScale(this, mapView)
         setupMinimapOverlay(this, mapView)
+        setupPlaceIcon(this, mapView)
     }
 
     private fun setupStartPoint(map: MapView) {
@@ -95,6 +96,27 @@ class MainActivity : AppCompatActivity() {
 //optionally, you can set the minimap to a different tile source
 //minimapOverlay.setTileSource(....)
         map.overlays.add(minimapOverlay)
+    }
+
+    private fun setupPlaceIcon(context: Context, map: MapView) {
+        //your items
+        val items = ArrayList<OverlayItem>()
+        items.add(OverlayItem("Title", "Description", GeoPoint(56.50, 85.00)))
+
+        //the overlay
+        val overlay = ItemizedOverlayWithFocus<OverlayItem>(items, object:
+            ItemizedIconOverlay.OnItemGestureListener<OverlayItem> {
+            override fun onItemSingleTapUp(index:Int, item:OverlayItem):Boolean {
+                //do something
+                return true
+            }
+            override fun onItemLongPress(index:Int, item:OverlayItem):Boolean {
+                return false
+            }
+        }, context)
+        overlay.setFocusItemsOnTap(true);
+
+        map.overlays.add(overlay);
     }
 
     override fun onResume() {
