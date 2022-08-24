@@ -1,4 +1,4 @@
-package space.rybakov.meringueosm
+package space.rybakov.meringueosm.presentation
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -8,6 +8,8 @@ import android.util.DisplayMetrics
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.viewModelFactory
 import org.osmdroid.config.Configuration.getInstance
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -16,12 +18,25 @@ import org.osmdroid.views.overlay.*
 import org.osmdroid.views.overlay.compass.CompassOverlay
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
+import space.rybakov.meringueosm.R
 
 class MainActivity : AppCompatActivity() {
+
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private lateinit var mapView: MapView
+
+    private val viewModelFactory by lazy {
+        MainViewModelFactory(application)
+    }
+
+    private val viewModel: MainViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        viewModel
 
         //handle permissions first, before map is created. not depicted here
 
@@ -42,11 +57,6 @@ class MainActivity : AppCompatActivity() {
         mapView.setTileSource(TileSourceFactory.MAPNIK)
 //        mapView.setTileSource(TileSourceFactory.USGS_TOPO);
 
-        val mapController = mapView.controller
-        mapController.setZoom(12.0)
-        val startPoint = GeoPoint(56.50, 85.00);
-        mapController.setCenter(startPoint);
-
         setupStartPoint(mapView)
         setupCompass(mapView)
         setupRotationGesture(mapView)
@@ -58,8 +68,8 @@ class MainActivity : AppCompatActivity() {
     private fun setupStartPoint(map: MapView) {
         val mapController = map.controller
         mapController.setZoom(12.0)
-        val startPoint = GeoPoint(56.50, 85.00);
-        mapController.setCenter(startPoint);
+        val startPoint = GeoPoint(56.50, 85.00)
+        mapController.setCenter(startPoint)
     }
 
     private fun setupCompass(map: MapView) {
@@ -114,9 +124,9 @@ class MainActivity : AppCompatActivity() {
                 return false
             }
         }, context)
-        overlay.setFocusItemsOnTap(true);
+        overlay.setFocusItemsOnTap(true)
 
-        map.overlays.add(overlay);
+        map.overlays.add(overlay)
     }
 
     override fun onResume() {
@@ -159,19 +169,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestPermissionsIfNecessary(permissions: Array<out String>) {
-        val permissionsToRequest = ArrayList<String>();
+        val permissionsToRequest = ArrayList<String>()
         permissions.forEach { permission ->
         if (ContextCompat.checkSelfPermission(this, permission)
                 != PackageManager.PERMISSION_GRANTED) {
             // Permission is not granted
-            permissionsToRequest.add(permission);
+            permissionsToRequest.add(permission)
         }
     }
         if (permissionsToRequest.size > 0) {
             ActivityCompat.requestPermissions(
                     this,
                     permissionsToRequest.toArray(Array(0) { i: Int -> "$i" }),
-                    REQUEST_PERMISSIONS_REQUEST_CODE);
+                    REQUEST_PERMISSIONS_REQUEST_CODE)
         }
     }
 }
