@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
         setupRotationGesture(mapView)
         setupScale(this, mapView)
         setupMinimapOverlay(this, mapView)
-        setupPlaceIcon(this, mapView)
+        //setupPlaceIcon(this, mapView)
     }
 
     private fun setupStartPoint(map: MapView) {
